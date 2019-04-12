@@ -3,6 +3,7 @@ const express = require("express");
 var cors = require('cors');
 const Data = require("./data");
 const bodyParser = require("body-parser");
+const countries = require("./resources/list_of_countries.json")
 const app = express();
 app.use(cors());
 const router = express.Router();
@@ -32,6 +33,12 @@ router.get("/getData", (req, res) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: data });
   });
+});
+
+
+router.get("/getCountries", (req, res) => {
+    return res.json({ success: true, data: countries });
+  
 });
 
 
