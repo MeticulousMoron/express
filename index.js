@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 var cors = require('cors');
 const Data = require("./data");
+const Post = require("./post");
 const bodyParser = require("body-parser");
 const countries = require("./resources/list_of_countries.json")
 const app = express();
@@ -19,7 +20,10 @@ mongoose.connect(
 
 let db = mongoose.connection;
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+app.use(bodyParser.json());
 
 db.once("open", () => console.log("connected to the database"));
 
@@ -37,8 +41,8 @@ router.get("/getData", (req, res) => {
 
 
 router.get("/getCountries", (req, res) => {
+  console.log("Request recieved for countries");
     return res.json({ success: true, data: countries });
-  
 });
 
 
@@ -83,8 +87,50 @@ console.log("This is the request " + id + " " + message);
   });
 });
 
+
+router.get("/posts", (req, res) => {
+  console.log("request reveiced to fetch alll posts");
+  Post.find((err, data) => {
+    if (err) return res.json({ success: false, error: err });
+    return  res.json(data) ;
+  });
+});
+
+
+router.post("/posts", (req, res) => {
+  let data = new Post();
+  
+  const { name,
+    title,
+    description,
+    author,
+    dateAdded,
+    link } = req.body;
+    console.log( req.body);
+  data.name = name;
+  data.title = title;
+  data.description = description;
+  data.author = author;
+  data.dateAdded = dateAdded;
+  data.link = link;
+  console.log("saving data with name " + name);
+  data.save(err => {
+    if (err) return res.json({ success: false, error: err });
+    return res.json({ success: true });
+  });
+});
+
+router.delete("/deletePost", (req, res) => {
+  const { id } = req.body;
+  console.log("request reveiced to delete post" + id);
+  Post.findOneAndDelete(id, err => {
+    if (err) return res.send(err);
+    return res.json({ success: true });
+  });
+});
+
 // append /api for our http requests
 app.use("/api", router);
 
 // launch our backend into a port
-app.listen(3001);
+app.listen(3007);
